@@ -1,0 +1,614 @@
+#include "CarInfoToyotaPrado.h"
+
+#include "stringID.h"
+#include "pageID.h"
+#include "controlID.h"
+
+#include "param.h"
+#include "appRequestCommand.h"
+#include "appRequestFunction.h"
+#include "appResponseCommand.h"
+#include "appResponseFunction.h"
+#include "halRequestFunction.h"
+#include "halResponseCommand.h"
+#include "halResponseFunction.h"
+#include "moduleParamRequest.h"
+#include "moduleParamResponse.h"
+#include "otherModuleRequestCommand.h"
+#include "otherModuleRequestFunction.h"
+#include "otherModuleResponseCommand.h"
+#include "otherModuleResponseFunction.h"
+#include "timer_interface.h"
+#include <flymoduleApi_internal.h>
+
+
+CCarInfoToyotaPrado::CCarInfoToyotaPrado(void)
+{
+}
+
+CCarInfoToyotaPrado::~CCarInfoToyotaPrado(void)
+{
+}
+
+void CCarInfoToyotaPrado::initCarInfoToyotaPrado(void)
+{
+	initCarInfo();
+
+	//雷达数据
+	int m_nRadarAlarmVolume = DEFAULT_NORMAL;
+	int m_nRadarAlarmLevel = DEFAULT_NORMAL;
+	int m_nFrontSonarFarther = DEFAULT_NORMAL;
+	int m_nRearSonarFarther = DEFAULT_NORMAL;
+	int m_nRadarSwitch = DEFAULT_NORMAL;
+
+	memset(m_nszAverageOilConsumeHistory, 0, sizeof(m_nszAverageOilConsumeHistory));
+
+	int i = 0;
+	for (i = 0; i < AVERAGE_OIL_CONSUME_HISTORY_ITEM_NUM; i++)
+	{
+		setProgressRange(CONTROLIDTRAVEL_CARINFO_GOLD_PRADO_DRIVING_INFO_BAR_CHART_1 + i, AVERAGE_OIL_CONSUME_MAX);
+	}
+	
+}
+
+void CCarInfoToyotaPrado::analyseCarInfo(u8 *p, int len)
+{
+	switch(p[0])
+	{
+	case 0x01:
+		{
+			u8 d0 = p[1];
+			u8 b0 = d0 & 0x01;
+			u8 b1 = d0 & 0x02;
+			u8 b2 = d0 & 0x04;
+			u8 b3 = d0 & 0x08;
+
+			m_eCarDoorLR = (b0) ? CAR_DOOR_OPEN : CAR_DOOR_CLOSE;
+			m_eCarDoorRR = (b1) ? CAR_DOOR_OPEN : CAR_DOOR_CLOSE;
+			m_eCarDoorRF = (b2) ? CAR_DOOR_OPEN : CAR_DOOR_CLOSE;
+			m_eCarDoorLF = (b3) ? CAR_DOOR_OPEN : CAR_DOOR_CLOSE;
+			m_eCarDoorBack = (d0 & 0x10) ? CAR_DOOR_OPEN : CAR_DOOR_CLOSE;
+			m_eHandLock = (d0 & 0x20) ? HAND_LOCK_UP : HAND_LOCK_DOWN;
+			m_eCarDoorEngine = (d0 & 0x40) ? CAR_DOOR_OPEN : CAR_DOOR_CLOSE;
+			m_eCarWindowBack = (d0 & 0x80) ? CAR_WINDOW_OPEN : CAR_WINDOW_CLOSE;
+			
+			u8 d1 = p[2];
+			m_eFootLock = (d1 & 0x01) ? FOOT_LOCK_OPEN : FOOT_LOCK_CLOSE;
+			m_eSafeBelt = (d1 & 0x02) ? SAFE_BELT_OPEN : SAFE_BELT_CLOSE;
+			m_nCarGear = d1 >> 4;
+
+			u8 d2 = p[3];
+			m_nDegreeOutdoor = (char)d2;
+			
+			m_nMileageCanRun = 0;
+			memcpy(&m_nMileageCanRun, p + 4, 2);
+			m_nMileageHaveRun = 0;
+			memcpy(&m_nMileageHaveRun, p + 6, 3);
+
+			LOGD("[%s] m_eCarDoorLF = [%s]", __FUNCTION__, (m_eCarDoorLF == CAR_DOOR_OPEN) ? "CAR_DOOR_OPEN" : "CAR_DOOR_CLOSE");
+			LOGD("[%s] m_eCarDoorRF = [%s]", __FUNCTION__, (m_eCarDoorRF == CAR_DOOR_OPEN) ? "CAR_DOOR_OPEN" : "CAR_DOOR_CLOSE");
+			LOGD("[%s] m_eCarDoorLR = [%s]", __FUNCTION__, (m_eCarDoorLR == CAR_DOOR_OPEN) ? "CAR_DOOR_OPEN" : "CAR_DOOR_CLOSE");
+			LOGD("[%s] m_eCarDoorRR = [%s]", __FUNCTION__, (m_eCarDoorRR == CAR_DOOR_OPEN) ? "CAR_DOOR_OPEN" : "CAR_DOOR_CLOSE");
+			LOGD("[%s] m_eCarDoorBack = [%s]", __FUNCTION__, (m_eCarDoorBack == CAR_DOOR_OPEN) ? "CAR_DOOR_OPEN" : "CAR_DOOR_CLOSE");
+			LOGD("[%s] m_eCarDoorEngine = [%s]", __FUNCTION__, (m_eCarDoorEngine == CAR_DOOR_OPEN) ? "CAR_DOOR_OPEN" : "CAR_DOOR_CLOSE");
+
+			LOGD("[%s] m_eHandLock = [%s]", __FUNCTION__, (m_eHandLock == HAND_LOCK_UP) ? "HAND_LOCK_UP" : "HAND_LOCK_DOWN");
+			LOGD("[%s] m_eCarWindowBack = [%s]", __FUNCTION__, (m_eCarWindowBack == CAR_WINDOW_OPEN) ? "CAR_WINDOW_OPEN" : "CAR_WINDOW_CLOSE");
+
+			LOGD("[%s] m_eFootLock = [%s]", __FUNCTION__, (m_eFootLock == FOOT_LOCK_OPEN) ? "FOOT_LOCK_OPEN" : "FOOT_LOCK_CLOSE");
+			LOGD("[%s] m_eSafeBelt = [%s]", __FUNCTION__, (m_eSafeBelt == SAFE_BELT_OPEN) ? "SAFE_BELT_OPEN" : "SAFE_BELT_CLOSE");
+
+			LOGD("[%s] m_nCarGear = [%s]", __FUNCTION__, getCarGearString(m_nCarGear));
+
+			LOGD("[%s] m_nDegreeOutdoor = [%d]", __FUNCTION__, m_nDegreeOutdoor);
+			LOGD("[%s] m_nMileageCanRun = [%d]", __FUNCTION__, m_nMileageCanRun);
+			LOGD("[%s] m_nMileageHaveRun = [%d]", __FUNCTION__, m_nMileageHaveRun);
+			
+			updateCarDoor();
+			updateEngineDoor();
+			updateHandLock();
+			updateCarWindow();
+			updateFootLock();
+			updateSafeBelt();
+			updateCarGear();
+			updateOutDoorTemperature();
+			updateMileageCanRun();
+			updateMileageHaveRun();
+		}
+		break;
+	case 0x02:
+		{
+			u8 d0 = p[1];
+			m_nRadarAlarmVolume = 0;
+			m_nRadarAlarmVolume = d0 & 0x07;
+
+			m_nRadarAlarmLevel = 0;
+			m_nRadarAlarmLevel = (d0 >> 3) & 0x03;
+			
+			m_nFrontSonarFarther = 0;
+			m_nFrontSonarFarther = (d0 >> 5) & 0x01;
+
+			m_nRearSonarFarther = 0;
+			m_nRearSonarFarther = (d0 >> 6) & 0x01;
+
+			m_nRadarSwitch = (d0 >> 7) & 0x01;
+
+			int nfl = 0, nfm = 0, nfr = 0;
+			int nrl = 0, nrm = 0, nrr = 0;
+			u8 d1 = p[2], d2 = p[3], d3 = p[4];
+
+			nfr = d1 & 0x0F;
+			nfl = (d1 >> 4) & 0x0F;
+			nfm = d2 & 0x0F;
+
+			nrr = d3 & 0x0F;
+			nrl = (d3 >> 4) & 0x0F;
+			nrm = (d2 >> 4) & 0x0F;
+
+			LOGD("[%s] m_nRadarAlarmVolume = [%d]", __FUNCTION__, m_nRadarAlarmVolume);
+			LOGD("[%s] m_nRadarAlarmLevel = [%d]", __FUNCTION__, m_nRadarAlarmLevel);
+			LOGD("[%s] m_nFrontSonarFarther = [%d]", __FUNCTION__, m_nFrontSonarFarther);
+			LOGD("[%s] m_nRearSonarFarther = [%d]", __FUNCTION__, m_nRearSonarFarther);
+			LOGD("[%s] m_nRadarSwitch = [%d]", __FUNCTION__, m_nRadarSwitch);
+
+			LOGD("[%s] radar data ------------------------------------------------------");
+			LOGD("[%s] front radar l m r [%d] [%d] [%d]", __FUNCTION__, nfl, nfm, nfr);
+			LOGD("[%s] rear  radar l m r [%d] [%d] [%d]", __FUNCTION__, nrl, nrm, nrr);
+			LOGD("[%s] radar data ------------------------------------------------------");
+
+			updateRadarSetting();
+
+			
+		}
+		break;
+	case 0x03:
+		{
+			u8 d0 = p[1];
+			m_nOilConsumeUnit = d0;
+
+			m_nAverageOilConsume = 0;
+			memcpy(&m_nAverageOilConsume, p + 2, 2);
+
+			LOGD("[%s] m_nOilConsumeUnit = [%s]", __FUNCTION__, getOilConsumeUnitString(m_nOilConsumeUnit));
+			LOGD("[%s] m_nAverageOilConsume = [%d]", __FUNCTION__, m_nAverageOilConsume);
+
+			updateAverageOilConsume();
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+
+void CCarInfoToyotaPrado::updateCarGear()
+{
+	u8 *p = (u8*)getCarGearString(m_nCarGear);
+
+	setAnsiSerialData(CONTROLIDTRAVEL_CARINFO_GOLD_MAIN_CAR_GEARSTAGE_TEXT, p, strlen(( char*)p));
+	setAnalogData(CONTROLIDTRAVEL_CARINFO_GOLD_MAIN_CAR_GEARSTAGE, m_nCarGear);
+}
+
+void CCarInfoToyotaPrado::updateAverageOilConsumeHistory(void)
+{
+	int i = 0;
+	for (i = AVERAGE_OIL_CONSUME_HISTORY_ITEM_NUM - 1; i > 0 ; i--)
+	{
+		m_nszAverageOilConsumeHistory[i] = m_nszAverageOilConsumeHistory[i - 1];
+	}
+
+	m_nszAverageOilConsumeHistory[0] = (m_nAverageOilConsume > AVERAGE_OIL_CONSUME_MAX * 10) ? AVERAGE_OIL_CONSUME_MAX * 10 : m_nAverageOilConsume;
+
+	setUpdateUI(false);
+	for (i = 0; i < AVERAGE_OIL_CONSUME_HISTORY_ITEM_NUM; i++)
+	{
+		setExProgressSinglePos(CONTROLIDTRAVEL_CARINFO_GOLD_PRADO_DRIVING_INFO_BAR_CHART_1 + i, 0, int(m_nszAverageOilConsumeHistory[i] / 10.0 + 0.5));
+	}
+	setUpdateUI(true);
+}
+
+void CCarInfoToyotaPrado::updateRadarSetting(void)
+{
+	setUpdateUI(false);
+
+	char szMsg[16] = {0};
+
+	//显示开关
+	setAnalogData(PAGE_SETUP_PARK_ASSIST_SET_DISPLAY_SWICH_ON, (m_nRadarSwitch == 1) ? 1 : 0);
+	setAnalogData(PAGE_SETUP_PARK_ASSIST_SET_DISPLAY_WWICH_OFF, (m_nRadarSwitch == 1) ? 0 : 1);
+	//前声呐
+	setAnalogData(PAGE_SETUP_PARK_ASSIST_SET_BEFORE_MORE_RECENT, (m_nFrontSonarFarther == 1) ? 0 : 1);
+	setAnalogData(PAGE_SETUP_PARK_ASSIST_SET_BEFORE_FURTHER, (m_nFrontSonarFarther == 1) ? 1 : 0);
+	//后声呐
+	setAnalogData(PAGE_SETUP_PARK_ASSIST_SET_AFTER_MORE_RECENT, (m_nRearSonarFarther == 1) ? 0 : 1);
+	setAnalogData(PAGE_SETUP_PARK_ASSIST_SET_AFTER_FURTHER, (m_nRearSonarFarther == 1) ? 1 : 0);
+	//报警音量
+	if (m_nRadarAlarmVolume == DEFAULT_NORMAL)
+		memcpy(szMsg, "--", strlen("--"));
+	else
+		sprintf(szMsg, "%d", m_nRadarAlarmVolume);
+
+	setAnsiSerialData(PAGE_SETUP_PARK_ASSIST_SET_ALERT_VOLUME_TEXT, (u8*)szMsg, strlen(szMsg));
+
+	setUpdateUI(true);
+}
+//page
+bool CCarInfoToyotaPrado::pages(u32 id, E_MOUSE_STATUS e, u8 *p, u8 len)
+{
+	bool bRet = false;
+	bRet = mainPage(id, e, p, len);
+	if (bRet)
+		return true;
+
+	bRet = false;
+	bRet = drivingInfoPage(id, e, p, len);
+	if (bRet)
+		return true;
+
+	bRet = false;
+	bRet = parkCarSettingPage(id, e, p, len);
+	if (bRet)
+		return true;
+
+	return false;
+}
+
+bool CCarInfoToyotaPrado::mainPage(u32 id, E_MOUSE_STATUS e, u8 *p, u8 len)
+{
+	bool bRet = true;
+
+	switch(id)
+	{
+	//跳页
+	case CONTROLIDTRAVEL_CARINFO_GOLD_PRADO_TRAVEL_INFORMATION: //行驶信息按钮
+		clickMainPageDrivingInfoPageEntrance(e);
+		break;
+	case CONTROLIDTRAVEL_CARINFO_GOLD_PRADO_PARKING_SET://泊车设置按钮
+		clickMainPageParkCarSettingPageEntrance(e);
+		break;
+	default:
+		bRet = false;
+		break;
+	}
+
+	return bRet;
+}
+
+bool CCarInfoToyotaPrado::drivingInfoPage(u32 id, E_MOUSE_STATUS e, u8 *p, u8 len)
+{
+	bool bRet = true;
+
+	switch(id)
+	{
+	//跳页
+	case CONTROLIDTRAVEL_CARINFO_GOLD_PRADO_DRIVING_INFO_BACK:
+		clickDrivingInfoPageGoBack(e);
+		break;
+	case CONTROLIDTRAVEL_CARINFO_GOLD_PRADO_DRIVING_INFO_CLEAR_DATA:
+		clickDrivingInfoPageErase(e);
+		break;
+	default:
+		bRet = false;
+		break;
+	}
+
+	return bRet;
+}
+
+bool CCarInfoToyotaPrado::parkCarSettingPage(u32 id, E_MOUSE_STATUS e, u8 *p, u8 len)
+{
+	bool bRet = true;
+
+	switch(id)
+	{
+	//跳页
+	case PAGE_SETUP_PARK_ASSIST_SET_BACK:
+		clickParkCarSettingPageGoBack(e);
+		break;
+	case PAGE_SETUP_PARK_ASSIST_SET_DISPLAY_SWICH_ON:
+		clickParkCarSettingPageDisplaySwitchOpen(e);
+		break;
+	case PAGE_SETUP_PARK_ASSIST_SET_DISPLAY_WWICH_OFF:
+		clickParkCarSettingPageDisplaySwitchClose(e);
+		break;
+	case PAGE_SETUP_PARK_ASSIST_SET_BEFORE_FURTHER:
+		clickParkCarSettingPageFrontSonarFar(e);
+		break;
+	case PAGE_SETUP_PARK_ASSIST_SET_BEFORE_MORE_RECENT:
+		clickParkCarSettingPageFrontSonarClose(e);
+		break;
+	case PAGE_SETUP_PARK_ASSIST_SET_AFTER_FURTHER:
+		clickParkCarSettingPageRearSonarFar(e);
+		break;
+	case PAGE_SETUP_PARK_ASSIST_SET_AFTER_MORE_RECENT:
+		clickParkCarSettingPageRearSonarClose(e);
+		break;
+	case PAGE_SETUP_PARK_ASSIST_SET_ALERT_VOLUME_UP:
+		clickParkCarSettingPageAlarmVolumeUp(e);
+		break;
+	case PAGE_SETUP_PARK_ASSIST_SET_ALERT_VOLUME_DOWN:
+		clickParkCarSettingPageAlarmVolumeDown(e);
+		break;
+	default:
+		bRet = false;
+		break;
+	}
+
+	return bRet;
+}
+
+//
+void CCarInfoToyotaPrado::clickMainPageDrivingInfoPageEntrance(E_MOUSE_STATUS e)
+{
+	switch(e)
+	{
+	case MOUSE_STATUS_UP:
+		{
+			setPage(TOYOTA_PRADO_PARKING_SETTING_PAGE);
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void CCarInfoToyotaPrado::clickMainPageParkCarSettingPageEntrance(E_MOUSE_STATUS e)
+{
+	switch(e)
+	{
+	case MOUSE_STATUS_UP:
+		{
+			setPage(TOYOTA_PRADO_PARKING_SETTING_PAGE);
+		}
+		break;
+	default:
+		break;
+	}
+}
+//
+void CCarInfoToyotaPrado::clickDrivingInfoPageGoBack(E_MOUSE_STATUS e)
+{
+	switch(e)
+	{
+	case MOUSE_STATUS_UP:
+		{
+			setPrePage();
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void CCarInfoToyotaPrado::clickDrivingInfoPageErase(E_MOUSE_STATUS e)
+{
+	switch(e)
+	{
+	case MOUSE_STATUS_UP:
+		{
+
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void CCarInfoToyotaPrado::clickParkCarSettingPageGoBack(E_MOUSE_STATUS e)
+{
+	switch(e)
+	{
+	case MOUSE_STATUS_UP:
+		{
+			setPrePage();
+		}
+		break;
+	default:
+		break;
+	}
+}
+//
+void CCarInfoToyotaPrado::clickParkCarSettingPageDisplaySwitchOpen(E_MOUSE_STATUS e)
+{
+	switch(e)
+	{
+	case MOUSE_STATUS_UP:
+		{
+			setToHalDisplaySwitch(1);
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void CCarInfoToyotaPrado::clickParkCarSettingPageDisplaySwitchClose(E_MOUSE_STATUS e)
+{
+	switch(e)
+	{
+	case MOUSE_STATUS_UP:
+		{
+			setToHalDisplaySwitch(0);
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void CCarInfoToyotaPrado::clickParkCarSettingPageFrontSonarClose(E_MOUSE_STATUS e)
+{
+	switch(e)
+	{
+	case MOUSE_STATUS_UP:
+		{
+			setToHalFrontSonarDistance(0);
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void CCarInfoToyotaPrado::clickParkCarSettingPageFrontSonarFar(E_MOUSE_STATUS e)
+{
+	switch(e)
+	{
+	case MOUSE_STATUS_UP:
+		{
+			setToHalFrontSonarDistance(1);
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void CCarInfoToyotaPrado::clickParkCarSettingPageRearSonarClose(E_MOUSE_STATUS e)
+{
+	switch(e)
+	{
+	case MOUSE_STATUS_UP:
+		{
+			setToHalRearSonarDistance(0);
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void CCarInfoToyotaPrado::clickParkCarSettingPageRearSonarFar(E_MOUSE_STATUS e)
+{
+	switch(e)
+	{
+	case MOUSE_STATUS_UP:
+		{
+			setToHalRearSonarDistance(1);
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void CCarInfoToyotaPrado::clickParkCarSettingPageAlarmVolumeUp(E_MOUSE_STATUS e)
+{
+	switch(e)
+	{
+	case MOUSE_STATUS_UP:
+		{
+			if (m_nRadarAlarmVolume == DEFAULT_NORMAL)
+				return;
+
+			m_nRadarAlarmVolume += 1;
+			m_nRadarAlarmVolume = (m_nRadarAlarmVolume > 5) ? 5 : m_nRadarAlarmVolume;
+			
+			if (m_nRadarAlarmVolume >= 1 && m_nRadarAlarmVolume <= 5)
+				setToHalAlarmVolume(m_nRadarAlarmVolume - 1);
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void CCarInfoToyotaPrado::clickParkCarSettingPageAlarmVolumeDown(E_MOUSE_STATUS e)
+{
+	switch(e)
+	{
+	case MOUSE_STATUS_UP:
+		{
+			if (m_nRadarAlarmVolume == DEFAULT_NORMAL)
+				return;
+
+			m_nRadarAlarmVolume -= 1;
+			m_nRadarAlarmVolume = (m_nRadarAlarmVolume <= 0) ? 1 : m_nRadarAlarmVolume;
+			
+			if (m_nRadarAlarmVolume >= 1 && m_nRadarAlarmVolume <= 5)
+				setToHalAlarmVolume(m_nRadarAlarmVolume - 1);
+		}
+		break;
+	default:
+		break;
+	}
+}
+//
+
+const char* CCarInfoToyotaPrado::getCarGearString(int id)
+{
+	const char *pRet = "N/A";
+
+	const char* szMap[9] = {"P", "R", "N", "D", "S1", "S2", "S3", "S4", "S5"};
+	
+	if (id >= 0 && id < 9)
+	{
+		pRet = szMap[id];
+	}
+
+	LOGD("[%s] [%s]", __FUNCTION__, pRet);
+
+	return pRet;
+}
+
+const char* CCarInfoToyotaPrado::getOilConsumeUnitString(int id)
+{
+	const char *pRet = "N/A";
+
+	const char* szMap[2] = {"L/100km", "km/L"};
+
+	if (id >= 0 && id < 2)
+	{
+		pRet = szMap[id];
+	}
+
+	LOGD("[%s] [%s]", __FUNCTION__, pRet);
+
+	return pRet;
+}
+
+//
+void CCarInfoToyotaPrado::setToHalAlarmVolume(u8 p)
+{
+	u8 szMsg[3] = {0xB1, 0x80, p};
+
+	makeAndSendMessageToHal(HAL_ID_EXTCAR, szMsg, sizeof(szMsg));
+}
+
+void CCarInfoToyotaPrado::setToHalDisplaySwitch(u8 p)
+{
+	p = 0x10 | p;
+
+	u8 szMsg[3] = {0xB1, 0x80, p};
+
+	makeAndSendMessageToHal(HAL_ID_EXTCAR, szMsg, sizeof(szMsg));
+}
+
+void CCarInfoToyotaPrado::setToHalFrontSonarDistance(u8 p)
+{
+	p = 0x20 | p;
+
+	u8 szMsg[3] = {0xB1, 0x80, p};
+
+	makeAndSendMessageToHal(HAL_ID_EXTCAR, szMsg, sizeof(szMsg));
+}
+
+void CCarInfoToyotaPrado::setToHalRearSonarDistance(u8 p)
+{
+	p = 0x40 | p;
+
+	u8 szMsg[3] = {0xB1, 0x80, p};
+
+	makeAndSendMessageToHal(HAL_ID_EXTCAR, szMsg, sizeof(szMsg));
+}
+//
+void CCarInfoToyotaPrado::setToHalAudioCtrl(u8 *p, int len)
+{
+	u8 szMsg[16] = {0};
+
+	szMsg[0] = 0xB1;
+	szMsg[1] = 0x81;
+	memcpy(szMsg + 2, p, len);
+
+	makeAndSendMessageToHal(HAL_ID_EXTCAR, szMsg, 2 + len);
+}

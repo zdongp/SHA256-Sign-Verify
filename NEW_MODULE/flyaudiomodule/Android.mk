@@ -1,0 +1,39 @@
+LOCAL_PATH := $(my-dir)
+
+
+include \
+		$(LOCAL_PATH)/FlyModuleService/Android.mk \
+		$(LOCAL_PATH)/key/Android.mk \
+		$(LOCAL_PATH)/service/Android.mk \
+		$(LOCAL_PATH)/system/Android.mk \
+		$(LOCAL_PATH)/center/Android.mk \
+		$(LOCAL_PATH)/flyJniSdk/Android.mk \
+		$(LOCAL_PATH)/mt3561_bt/Android.mk \
+		$(LOCAL_PATH)/flyRemoteOnline/Android.mk \
+		$(LOCAL_PATH)/gps/Android.mk \
+		$(LOCAL_PATH)/ipod/Android.mk \
+		$(LOCAL_PATH)/sync/Android.mk \
+		$(LOCAL_PATH)/tpms/Android.mk \
+		$(LOCAL_PATH)/tv/Android.mk \
+		$(LOCAL_PATH)/audiovideo/Android.mk \
+		$(LOCAL_PATH)/media/Android.mk \
+		$(LOCAL_PATH)/radio/Android.mk \
+		$(LOCAL_PATH)/ac/Android.mk \
+		$(LOCAL_PATH)/timer/Android.mk \
+		$(LOCAL_PATH)/backcar/Android.mk \
+		$(LOCAL_PATH)/osd/Android.mk \
+		$(LOCAL_PATH)/extcar/Android.mk \
+		$(LOCAL_PATH)/externalCtrl/Android.mk \
+		$(LOCAL_PATH)/bc8_bt/Android.mk \
+		$(LOCAL_PATH)/automate/Android.mk \
+		$(LOCAL_PATH)/auxinput/Android.mk \
+		$(LOCAL_PATH)/auxscreen/Android.mk \
+		$(LOCAL_PATH)/blcd/Android.mk \
+		$(LOCAL_PATH)/dnv/Android.mk \
+		$(LOCAL_PATH)/dvd/Android.mk \
+		$(LOCAL_PATH)/dvr/Android.mk \
+		$(LOCAL_PATH)/extcar_honda_tsu/Android.mk \
+		$(LOCAL_PATH)/osd_Moran/Android.mk \
+		$(LOCAL_PATH)/system_Moran/Android.mk \
+		$(LOCAL_PATH)/audiovideo_Moran/Android.mk \
+		$(LOCAL_PATH)/sign_verify/Android.mk \

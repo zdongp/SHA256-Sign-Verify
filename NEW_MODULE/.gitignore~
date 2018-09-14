@@ -1,0 +1,4 @@
+out/
+*.pro.user
+cp_so.sh
+insight/

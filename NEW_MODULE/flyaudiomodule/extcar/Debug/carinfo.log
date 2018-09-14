@@ -1,0 +1,46 @@
+﻿生成启动时间为 2014-5-12 14:40:23。
+     1>项目“H:\githome\gitwork\FlyAudioNativeService8X25\flyaudiomodule\extcar\carinfo.vcxproj”在节点 2 上(rebuild 个目标)。
+     1>_PrepareForClean:
+         正在删除文件“Debug\carinfo.lastbuildstate”。
+       InitializeBuildStatus:
+         正在对“Debug\carinfo.unsuccessfulbuild”执行 Touch 任务。
+       ClCompile:
+         G:\Program Files\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /IH:\githome\gitwork\FlyAudioNativeService8X25\include\flyaudiomodule /Zi /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _USRDLL /D CARINFO_EXPORTS /D _WINDLL /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt api.cpp app\appRequestCommand.cpp app\appRequestFunction.cpp app\appResponseCommand.cpp app\appResponseFunction.cpp hal\halRequestFunction.cpp hal\halResponseCommand.cpp hal\halResponseFunction.cpp moduleparam\moduleParamRequest.cpp moduleparam\moduleParamResponse.cpp othermodule\otherModuleRequestCommand.cpp othermodule\otherModuleRequestFunction.cpp othermodule\otherModuleResponseCommand.cpp othermodule\otherModuleResponseFunction.cpp param\param.cpp timer\timer_interface.cpp
+         timer_interface.cpp
+     1>timer\timer_interface.cpp(1): fatal error C1083: 无法打开包括文件:“pthread.h”: No such file or directory
+         param.cpp
+     1>param\param.cpp(3): fatal error C1083: 无法打开包括文件:“android/log.h”: No such file or directory
+         otherModuleResponseFunction.cpp
+     1>othermodule\otherModuleResponseFunction.cpp(3): fatal error C1083: 无法打开包括文件:“cutils/properties.h”: No such file or directory
+         otherModuleResponseCommand.cpp
+     1>h:\githome\gitwork\flyaudionativeservice8x25\include\flyaudiomodule\debug.h(6): fatal error C1083: 无法打开包括文件:“android/log.h”: No such file or directory
+         otherModuleRequestFunction.cpp
+     1>h:\githome\gitwork\flyaudionativeservice8x25\include\flyaudiomodule\debug.h(6): fatal error C1083: 无法打开包括文件:“android/log.h”: No such file or directory
+         otherModuleRequestCommand.cpp
+     1>h:\githome\gitwork\flyaudionativeservice8x25\include\flyaudiomodule\debug.h(6): fatal error C1083: 无法打开包括文件:“android/log.h”: No such file or directory
+         moduleParamResponse.cpp
+     1>h:\githome\gitwork\flyaudionativeservice8x25\include\flyaudiomodule\debug.h(6): fatal error C1083: 无法打开包括文件:“android/log.h”: No such file or directory
+         moduleParamRequest.cpp
+     1>h:\githome\gitwork\flyaudionativeservice8x25\include\flyaudiomodule\debug.h(6): fatal error C1083: 无法打开包括文件:“android/log.h”: No such file or directory
+         halResponseFunction.cpp
+     1>h:\githome\gitwork\flyaudionativeservice8x25\include\flyaudiomodule\debug.h(6): fatal error C1083: 无法打开包括文件:“android/log.h”: No such file or directory
+         halResponseCommand.cpp
+     1>h:\githome\gitwork\flyaudionativeservice8x25\include\flyaudiomodule\debug.h(6): fatal error C1083: 无法打开包括文件:“android/log.h”: No such file or directory
+         halRequestFunction.cpp
+     1>h:\githome\gitwork\flyaudionativeservice8x25\include\flyaudiomodule\debug.h(6): fatal error C1083: 无法打开包括文件:“android/log.h”: No such file or directory
+         appResponseFunction.cpp
+     1>h:\githome\gitwork\flyaudionativeservice8x25\include\flyaudiomodule\debug.h(6): fatal error C1083: 无法打开包括文件:“android/log.h”: No such file or directory
+         appResponseCommand.cpp
+     1>h:\githome\gitwork\flyaudionativeservice8x25\include\flyaudiomodule\debug.h(6): fatal error C1083: 无法打开包括文件:“android/log.h”: No such file or directory
+         appRequestFunction.cpp
+     1>h:\githome\gitwork\flyaudionativeservice8x25\include\flyaudiomodule\debug.h(6): fatal error C1083: 无法打开包括文件:“android/log.h”: No such file or directory
+         appRequestCommand.cpp
+     1>h:\githome\gitwork\flyaudionativeservice8x25\include\flyaudiomodule\debug.h(6): fatal error C1083: 无法打开包括文件:“android/log.h”: No such file or directory
+         api.cpp
+     1>api.cpp(1): fatal error C1083: 无法打开包括文件:“flytypes.h”: No such file or directory
+         正在生成代码...
+     1>已完成生成项目“H:\githome\gitwork\FlyAudioNativeService8X25\flyaudiomodule\extcar\carinfo.vcxproj”(rebuild 个目标)的操作 - 失败。
+
+生成失败。
+
+已用时间 00:00:02.17
